@@ -11,7 +11,7 @@ if test -f "Revolt.toml"; then
 fi
 
 # set hostname for Caddy and vite variables
-echo "HOSTNAME=https://$1" > .env.web
+echo "HOSTNAME=:80" > .env.web
 echo "REVOLT_PUBLIC_URL=https://$1/api" >> .env.web
 echo "VITE_API_URL=https://$1/api" >> .env.web
 echo "VITE_WS_URL=wss://$1/ws" >> .env.web
