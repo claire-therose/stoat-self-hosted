@@ -15,9 +15,6 @@ Self-hosting Stoat using Docker
 
 This repository contains configurations and instructions that can be used for deploying a full instance of Stoat, including the back-end, web front-end, file server, and metadata and image proxy.
 
-> [!WARNING]
-> If you are updating an instance from before February 20, 2026, please consult the [notices section](#notices) at the bottom.
-
 > [!IMPORTANT]
 > A list of security advisories is [provided at the bottom](#security-advisories).
 
@@ -39,74 +36,9 @@ This repository contains configurations and instructions that can be used for de
 
 ## Deployment
 
-To get started, find yourself a suitable server to deploy onto, we recommend starting with at least 2 vCPUs and 2 GB of memory.
+To get started, deploy on your own infrastructure. I'm using an AMD machine with Proxmox installed. Stoat is running a little 2 thread 2GB RAM lxc.
 
-> [!TIP]
->
-> **We've partnered with Hostinger to bring you a 20% discount off VPS hosting!**
->
-> 👉 https://www.hostinger.com/vps-hosting?REFERRALCODE=REVOLTCHAT
->
-> We recommend using the _KVM 2_ plan at minimum!\
-> Our testing environment for self-hosted currently sits on a KVM 2 instance, and we are happy to assist with issues.
-
-The instructions going forward will use Hostinger as an example hosting platform, but you should be able to adapt these to other platforms as necessary. There are important details throughout.
-
-![Select the location](.github/guide/hostinger-1.location.webp)
-
-When asked, choose **Ubuntu Server** as your operating system; this is used by us in production, and we recommend its use.
-
-![Select the operating system](.github/guide/hostinger-2.os.webp)
-
-If you've chosen to go with Hostinger, they include integrated malware scanning, which may be of interest:
-
-![Consider malware scanning](.github/guide/hostinger-3.malware.webp)
-
-You should set a secure root password for login (_or disable password login after setup, which is explained later! but you shouldn't make the password trivial until after this is secured at least!_) and we recommend that you configure an SSH key:
-
-![Configuration unfilled](.github/guide/hostinger-4.configuration.webp)
-![Configuration filled](.github/guide/hostinger-5.configuration.webp)
-
-Make sure to confirm everything is correct!
-
-![Confirmation](.github/guide/hostinger-6.complete.webp)
-
-Wait for your VPS to be created...
-
-| ![Wait for creation](.github/guide/hostinger-7.wait.webp) | ![Wait for creation](.github/guide/hostinger-8.connect.webp) |
-| --------------------------------------------------------- | ------------------------------------------------------------ |
-
-After installation, SSH into the machine:
-
-```bash
-# use the provided IP address to connect:
-ssh root@<ip address>
-# .. if you have a SSH key configured
-ssh root@<ip address> -i path/to/id_rsa
-```
-
-And now we can proceed with some basic configuration and securing the system:
-
-```bash
-# update the system
-apt-get update && apt-get upgrade -y
-
-# configure firewall
-ufw allow ssh
-ufw allow http
-ufw allow https
-ufw allow 7881/tcp
-ufw allow 50000:50100/udp
-ufw default deny
-ufw enable
-
-# if you have configured an SSH key, disable password authentication:
-sudo sed -E -i 's|^#?(PasswordAuthentication)\s.*|\1 no|' /etc/ssh/sshd_config
-if ! grep '^PasswordAuthentication\s' /etc/ssh/sshd_config; then echo 'PasswordAuthentication no' |sudo tee -a /etc/ssh/sshd_config; fi
-
-# reboot to apply changes
-reboot
-```
+First, do general update stuff. Update, install docker, install git, etc.
 
 > [!NOTE]
 > If you are using another cloud provider, or you are doing this on a physical machine, you will need to forwards ports 80, 443, 7881 and 50000-50100/udp.
@@ -117,29 +49,10 @@ Your system is now ready to proceed with installation, but before we continue, y
 
 Your domain (or a subdomain) should point to the server's IP (A and AAAA records) or CNAME to the hostname provided.
 
-Next, we must install the required dependencies:
-
-```bash
-# ensure Git and Docker are installed
-apt-get update
-apt-get install ca-certificates curl git micro
-install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-chmod a+r /etc/apt/keyrings/docker.asc
-
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-apt-get update
-apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-```
-
 Now, we can pull in the configuration for Stoat:
 
 ```bash
-git clone https://github.com/stoatchat/self-hosted stoat
+git clone https://github.com/claire-therose/stoat-self-hosted stoat
 cd stoat
 ```
 
