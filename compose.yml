@@ -204,6 +204,6 @@ services:
 
   # Web App
   web:
-    image: ghcr.io/stoatchat/for-web:addb6b7
+    image: ghcr.io/claire-therose/stoat-for-web:latest
     restart: always
     env_file: .env.web
